@@ -212,6 +212,6 @@ class DispatcherTest {
             new Document("Fifth", DocumentType.REPORT)
     );
     private void waitForDocumentToFinish(Document doc) throws InterruptedException {
-        Thread.sleep(doc.getType().getPrintingTimeSeconds() * 1000L);
+        Thread.sleep(doc.getType().getPrintingTimeSeconds() * 1010L);
     }
 }

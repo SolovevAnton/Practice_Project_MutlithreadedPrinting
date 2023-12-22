@@ -14,6 +14,6 @@ public class Main {
         Dispatcher dispatcher = new Dispatcher();
         dispatcher.add(new Document(DocumentType.PLAN));
         dispatcher.add(new Document(DocumentType.DOC));
-        dispatcher.shutdownNow();
+        dispatcher.cancelPrintNow();
     }
 }

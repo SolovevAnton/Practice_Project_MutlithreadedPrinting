@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class Dispatcher {
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final List<Document> printedDocs = new CopyOnWriteArrayList<>();
     @Getter
     private final BlockingQueue<Document> queue = new LinkedBlockingDeque<>();
@@ -32,14 +32,19 @@ public class Dispatcher {
 
     private void printDoc(Document doc) {
         System.out.printf("Doc named: %s type:%s start printing\n", doc.getName(), doc.getType().getTypeName());
-        waitForDocumentToBePrinted(doc);
-        printedDocs.add(doc);
-        System.out.printf("Doc named: %s type:%s end printing\n", doc.getName(), doc.getType().getTypeName());
+        try {
+            waitForDocumentToBePrinted(doc);
+            printedDocs.add(doc);
+            System.out.printf("Doc named: %s type:%s end printing\n", doc.getName(), doc.getType().getTypeName());
+        } catch (InterruptedException e) {
+            System.out.printf("Document %s printing is cancelled\n",doc.getName());;
+        }
     }
 
-    @SneakyThrows
-    private void waitForDocumentToBePrinted(Document doc) {
-        Thread.sleep(doc.getType().getPrintingTimeSeconds() * 1000L);
+
+    private void waitForDocumentToBePrinted(Document doc) throws InterruptedException {
+            Thread.sleep(doc.getType().getPrintingTimeSeconds() * 1000L);
+
     }
 
     /**
@@ -68,6 +73,11 @@ public class Dispatcher {
 
     public boolean cancelPrintDoc(Document doc) {
         return queue.remove(doc);
+    }
+    public void cancelPrintNow(){
+        executorService.shutdownNow();
+        executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(this::takeFromQueueAndPrintDoc);
     }
 
     public List<Document> getSortedByOrderPrintedDocs() {
